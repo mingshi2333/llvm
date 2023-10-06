@@ -54,7 +54,7 @@ on:
 jobs:
   build:
     name: Build + LIT
-    runs-on: [Windows, build]
+    runs-on: [Windows, arc]
     environment: WindowsCILock
     # TODO use cached checkout
     outputs:
