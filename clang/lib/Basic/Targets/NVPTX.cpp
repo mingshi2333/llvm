@@ -61,7 +61,7 @@ NVPTXTargetInfo::NVPTXTargetInfo(const llvm::Triple &Triple,
   // Define available target features
   // These must be defined in sorted order!
   NoAsmVariants = true;
-  GPU = CudaArch::SM_20;
+  GPU = CudaArch::UNUSED;
 
   if (TargetPointerWidth == 32)
     resetDataLayout("e-p:32:32-i64:64-i128:128-v16:16-v32:32-n16:32:64");
@@ -171,10 +171,20 @@ void NVPTXTargetInfo::getTargetDefines(const LangOptions &Opts,
                                        MacroBuilder &Builder) const {
   Builder.defineMacro("__PTX__");
   Builder.defineMacro("__NVPTX__");
+<<<<<<< HEAD
   if (Opts.CUDAIsDevice || Opts.OpenMPIsTargetDevice || Opts.SYCLIsDevice ||
       !HostTarget) {
     // Set __CUDA_ARCH__ or __SYCL_CUDA_ARCH__ for the GPU specified.
     // The SYCL-specific macro is used to distinguish the SYCL and CUDA APIs.
+=======
+
+  // Skip setting architecture dependent macros if undefined.
+  if (GPU == CudaArch::UNUSED && !HostTarget)
+    return;
+
+  if (Opts.CUDAIsDevice || Opts.OpenMPIsTargetDevice || !HostTarget) {
+    // Set __CUDA_ARCH__ for the GPU specified.
+>>>>>>> 7155c1ef658b66132f15bf1406e84e68eed3358f
     std::string CUDAArchCode = [this] {
       switch (GPU) {
       case CudaArch::GFX600:
@@ -224,10 +234,10 @@ void NVPTXTargetInfo::getTargetDefines(const LangOptions &Opts,
       case CudaArch::Generic:
       case CudaArch::LAST:
         break;
-      case CudaArch::UNUSED:
       case CudaArch::UNKNOWN:
         assert(false && "No GPU arch when compiling CUDA device code.");
         return "";
+      case CudaArch::UNUSED:
       case CudaArch::SM_20:
         return "200";
       case CudaArch::SM_21:

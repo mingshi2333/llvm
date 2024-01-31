@@ -60,6 +60,7 @@
 // LINK: nvlink{{.*}}"-o" "a.out" "-arch" "sm_61" {{.*}} "{{.*}}.cubin"
 
 //
+<<<<<<< HEAD
 // Test the generated arguments default to a value with no architecture. 
 //
 // RUN: %clang --target=nvptx64-nvidia-cuda -### --cuda-path=%S/Inputs/CUDA/usr/local/cuda %s 2>&1 \
@@ -70,6 +71,8 @@
 // DEFAULT-NEXT: nvlink{{.*}}"-o" "a.out" "-arch" "sm_52" {{.*}} "[[CUBIN]].cubin"
 
 //
+=======
+>>>>>>> 7155c1ef658b66132f15bf1406e84e68eed3358f
 // Test to ensure that we enable handling global constructors in a freestanding
 // Nvidia compilation.
 //
@@ -77,3 +80,17 @@
 // RUN:   | FileCheck -check-prefix=LOWERING %s
 
 // LOWERING: -cc1" "-triple" "nvptx64-nvidia-cuda" {{.*}} "-mllvm" "--nvptx-lower-global-ctor-dtor"
+
+//
+// Tests for handling a missing architecture.
+//
+// RUN: not %clang -target nvptx64-nvidia-cuda %s -### 2>&1 \
+// RUN:   | FileCheck -check-prefix=MISSING %s
+
+// MISSING: error: Must pass in an explicit nvptx64 gpu architecture to 'ptxas'
+// MISSING: error: Must pass in an explicit nvptx64 gpu architecture to 'nvlink'
+
+// RUN: %clang -target nvptx64-nvidia-cuda -flto -c %s -### 2>&1 \
+// RUN:   | FileCheck -check-prefix=GENERIC %s
+
+// GENERIC-NOT: -cc1" "-triple" "nvptx64-nvidia-cuda" {{.*}} "-target-cpu"
