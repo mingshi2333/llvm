@@ -667,8 +667,8 @@ jit_compiler::fuseKernels(QueueImplPtr Queue,
   unsigned KernelIndex = 0;
   ParamList FusedParams;
   PromotionMap PromotedAccs;
-  // TODO(Lukas, ONNX-399): Collect information about streams and auxiliary
-  // resources (which contain reductions) and figure out how to fuse them.
+  // TODO(Lukas, ONNX-399): Collect information about streams and figure out how
+  // to fuse them.
   for (auto &RawCmd : InputKernels) {
     auto *KernelCmd = static_cast<ExecCGCommand *>(RawCmd);
     auto &CG = KernelCmd->getCG();
