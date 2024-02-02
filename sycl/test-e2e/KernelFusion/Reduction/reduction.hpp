@@ -1,11 +1,7 @@
-// RUN: %{build} -fsycl-embed-ir -o %t.out
-// RUN: %{run} %t.out
-
 // Test fusion works with reductions. Some algorithms will lead to fusion being
 // cancelled in some devices. These should work properly anyway.
 
 #include <sycl/sycl.hpp>
-#include <utility>
 
 #include "../helpers.hpp"
 #include "sycl/detail/reduction_forward.hpp"
@@ -13,8 +9,6 @@
 using namespace sycl;
 
 constexpr inline size_t globalSize = 512;
-
-template <typename BinaryOperation> class ReductionTest;
 
 template <detail::reduction::strategy Strategy> void test(nd_range<1> ndr) {
   std::array<int, globalSize> data;
@@ -63,32 +57,4 @@ template <detail::reduction::strategy Strategy> void test(nd_range<1> ndr) {
 
   assert(sumRes == expectedSum);
   assert(maxRes == expectedMax);
-}
-
-template <detail::reduction::strategy... strategies>
-void test_strategies(
-    std::integer_sequence<detail::reduction::strategy, strategies...>,
-    size_t localSize) {
-  ((test<strategies>({globalSize, localSize})), ...);
-}
-
-int main() {
-  constexpr std::array<std::size_t, 3> localSizes{
-      globalSize /*Test single work-group*/,
-      globalSize / 32 /*Test middle-sized work-group*/,
-      1 /*Test single item work-groups*/};
-  for (size_t localSize : localSizes) {
-    test_strategies(
-        std::integer_sequence<
-            detail::reduction::strategy,
-            detail::reduction::strategy::group_reduce_and_last_wg_detection,
-            detail::reduction::strategy::local_atomic_and_atomic_cross_wg,
-            detail::reduction::strategy::range_basic,
-            detail::reduction::strategy::group_reduce_and_atomic_cross_wg,
-            detail::reduction::strategy::local_mem_tree_and_atomic_cross_wg,
-            detail::reduction::strategy::group_reduce_and_multiple_kernels,
-            detail::reduction::strategy::basic,
-            detail::reduction::strategy::multi>{},
-        localSize);
-  }
 }
